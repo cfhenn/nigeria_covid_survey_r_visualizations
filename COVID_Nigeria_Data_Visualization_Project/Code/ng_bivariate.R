@@ -1,14 +1,18 @@
 rm(list=ls())
 library(ggplot2)
+library(questionr)
 
 # collecting the data
-link="https://github.com/adam-porton/PubPol543/raw/main/Data/r1_sect_a_3_4_5_6_8_9_12.csv"
+link="https://github.com/cfhenn/public_policy_projects/blob/main/COVID_Nigeria_Data_Visualization_Project/Data/r1_sect_a_3_4_5_6_8_9_12.csv?raw=true"
 nigeria_df <- as.data.frame(read.csv(file = url(link)))
+nigeria_df <- nigeria_df[,(names(nigeria_df) %in% c("s9q2","s6q4","wt_baseline"))]
+nigeria_df <- nigeria_df[complete.cases(nigeria_df), ]
 
-#convert "yes"/"no" survey responses to 1/0 integer variables that can be summed/averaged
-nigeria_df$threat[nigeria_df$s9q2 == "1. A substantial threat"] <- "Substantial Threat"
-nigeria_df$threat[nigeria_df$s9q2 == "2. A moderate threat" ] <- "Moderate Threat"
-nigeria_df$threat[(nigeria_df$s9q2 == "3. Not much of a threat") | (nigeria_df$s9q2 == "4. Not a threat at all" )] <- "Little or No Threat"
+
+#get the weighted number of people who feel various levels of threatened by COVID19 as columns
+nigeria_df$threat[nigeria_df$s9q2 == "1. A substantial threat"] <- "Severe threat"
+nigeria_df$threat [nigeria_df$s9q2 == "2. A moderate threat"] <- "Medium threat"
+nigeria_df$threat [(nigeria_df$s9q2 == "3. Not much of a threat")|(nigeria_df$s9q2 == "4. Not a threat at all" )] <- "Little or no threat"
 
 #sort respondents in to industries
 nigeria_df$industry[nigeria_df$s6q4 ==  "1. AGRICULTURE, HUNTING, FISHING"] <- "Agriculture"
@@ -21,11 +25,7 @@ nigeria_df$industry[(nigeria_df$s6q4 == "5. BUYING &amp; SELLING GOODS, REPAIR O
 nigeria_df$industry[(nigeria_df$s6q4 == "9. PERSONAL SERVICES, EDUCATION, HEALTH, CULTURE, SPORT, DOMESTIC WORK, OTHER")] <- "Other"
 
 
-##################################################################################
-##################################################################################
-# Relevant section here 
-
-industry_threat=table(nigeria_df$industry, nigeria_df$threat)
+industry_threat=wtd.table(nigeria_df$industry, nigeria_df$threat, weights = nigeria_df$wt_baseline)
 industry_threat_df=as.data.frame(industry_threat)
 names(industry_threat_df) <- c("industry","threat","counts")
 
@@ -34,8 +34,6 @@ industry_threat_mg_col <- prop.table(industry_threat,margin = 2)
 #adding marginal
 industry_threat_df$pct_col <- as.data.frame(industry_threat_mg_col)[,3]
 
-##################################################################################
-##################################################################################
 base=ggplot(data <- industry_threat_df,  aes(x=reorder(industry, counts), y=counts, fill=threat))
 
 conditionColor <- ifelse(industry_threat_df$threat%in%c("Minor Threat",'No Threat'),'grey80','grey50')
@@ -50,5 +48,3 @@ bar_stacked <- bar_stacked + labs(title=titleText, x =NULL, y = NULL, caption = 
 bar_stacked <- bar_stacked + guides(fill=guide_legend(title=""))
 
 bar_stacked
-dev.copy(png,'myplot.png')
-dev.off()
