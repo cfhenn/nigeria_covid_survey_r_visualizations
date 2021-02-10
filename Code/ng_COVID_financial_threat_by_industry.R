@@ -39,7 +39,7 @@ base=ggplot(data <- industry_threat_df,  aes(x=reorder(industry, counts), y=coun
 conditionColor <- ifelse(industry_threat_df$threat%in%c("Minor Threat",'No Threat'),'grey80','grey50')
 bar_stacked <- base + geom_bar(stat = "identity", position = 'stack')
 
-bar_stacked <- bar_stacked + theme( axis.text.x = element_text(angle = 90, hjust = 1, size=8 ))
+bar_stacked <- bar_stacked + theme( axis.text.x = element_text(angle = 90, hjust = 1, size=10 ))
 titleText='Number of Nigerian housholds that are financially threatened by COVID-19, by industry'
 sourceText='Source: LSMS-ISA'
 
