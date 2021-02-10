@@ -8,7 +8,7 @@ library(ggplot2)
 library(varhandle)
 
 # collecting the data
-link="https://github.com/cfhenn/public_policy_projects/blob/main/COVID_Nigeria_Data_Visualization_Project/Data/r1_sect_a_3_4_5_6_8_9_12.csv?raw=true"
+link="https://github.com/cfhenn/nigeria_covid_survey_r_visualizations/blob/main/Data/r1_sect_a_3_4_5_6_8_9_12.csv?raw=true"
 nigeria_df <- as.data.frame(read.csv(file = url(link)))
 nigeria_df <- nigeria_df[,(names(nigeria_df) %in% c("s5q4a","s5q4b","sector","wt_baseline"))]
 nigeria_df <- nigeria_df[complete.cases(nigeria_df), ]
@@ -38,21 +38,20 @@ ng_school_df$pct_inschool <- (ng_school_df$pct_inschool/ng_school_df$population)
 #base GGPLOT2 starts with a "base", telling WHAT VARIABLES TO PLOT
 plot= ggplot(data = ng_school_df, 
              aes(x = sectortime,
-                 y = pct_inschool),
-             xlab="",
-             ylab="Percentage of children in school") 
+                 y = pct_inschool)) 
+
+plot <- plot + ylab("% of children in school") # for the y axis label
 
 plot <- plot + geom_bar(fill ="blue",
                         stat = 'identity') 
 
-plot <- plot + theme( axis.text.x = element_text(angle = 90, hjust = 1, size=8 ))
+plot <- plot + theme( axis.text.x = element_text(angle = 90, hjust = 1, size=12 ))
 
-sourceText='Source: LSMS-ISA'
+sourceText='Source: LSMS-Supported High-Frequency Phone Surveys on COVID-19'
 titleText='School attendance in Nigeria before and during the COVID19 pandemic, by living sector'
 
 plot <- plot + labs(title=titleText,
                      x =NULL, 
-                     y = NULL,
                      caption = sourceText)
 
 plot

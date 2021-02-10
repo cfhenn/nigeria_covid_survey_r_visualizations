@@ -3,10 +3,10 @@ library(ggplot2)
 library(questionr)
 
 # collecting the data
-link="https://github.com/cfhenn/public_policy_projects/blob/main/COVID_Nigeria_Data_Visualization_Project/Data/r1_sect_a_3_4_5_6_8_9_12.csv?raw=true"
+link="https://github.com/cfhenn/nigeria_covid_survey_r_visualizations/blob/main/Data/r1_sect_a_3_4_5_6_8_9_12.csv?raw=true"
 nigeria_df <- as.data.frame(read.csv(file = url(link)))
 nigeria_df <- nigeria_df[,(names(nigeria_df) %in% c("s9q2","s6q4","wt_baseline"))]
-nigeria_df <- nigeria_df[complete.cases(nigeria_df), ]
+nigeria_df <- nigeria_df[complete.cases(nigeria_df), ] #may skew the results if incomplete cases are a nonrandom sample
 
 
 #get the weighted number of people who feel various levels of threatened by COVID19 as columns
@@ -41,10 +41,12 @@ bar_stacked <- base + geom_bar(stat = "identity", position = 'stack')
 
 bar_stacked <- bar_stacked + theme( axis.text.x = element_text(angle = 90, hjust = 1, size=8 ))
 titleText='Number of Nigerian housholds that are financially threatened by COVID-19, by industry'
-sourceText='Source: World Bank'
+sourceText='Source: LSMS-ISA'
 
 bar_stacked <- bar_stacked + xlab("Industry") + ylab("Number of Households")
 bar_stacked <- bar_stacked + labs(title=titleText, x =NULL, y = NULL, caption = sourceText)
 bar_stacked <- bar_stacked + guides(fill=guide_legend(title=""))
 
 bar_stacked
+
+
