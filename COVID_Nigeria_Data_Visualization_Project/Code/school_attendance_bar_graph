@@ -37,21 +37,20 @@ ng_school_df$pct_inschool <- (ng_school_df$pct_inschool/ng_school_df$population)
 #base GGPLOT2 starts with a "base", telling WHAT VARIABLES TO PLOT
 plot= ggplot(data = ng_school_df, 
              aes(x = sectortime,
-                 y = pct_inschool),
-             xlab="",
-             ylab="Percentage of children in school") 
+                 y = pct_inschool)) 
+
+plot <- plot + ylab("% of children in school") # for the y axis label
 
 plot <- plot + geom_bar(fill ="blue",
                         stat = 'identity') 
 
-plot <- plot + theme( axis.text.x = element_text(angle = 90, hjust = 1, size=8 ))
+plot <- plot + theme( axis.text.x = element_text(angle = 90, hjust = 1, size=10 ))
 
 sourceText='Source: LSMS-ISA'
 titleText='School attendance in Nigeria before and during the COVID19 pandemic, by living sector'
 
 plot <- plot + labs(title=titleText,
                      x =NULL, 
-                     y = NULL,
                      caption = sourceText)
 
 plot
