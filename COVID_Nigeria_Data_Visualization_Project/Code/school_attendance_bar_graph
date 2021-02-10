@@ -1,4 +1,3 @@
-##### THIS PROGRAM DOES NOT WORK MUST FIX
 rm(list=ls())
 
 library(scales) 
