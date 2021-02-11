@@ -13,8 +13,15 @@ nigeria_df <- nigeria_df[,(names(nigeria_df) %in% c("s5q4a","s5q4b","sector","wt
 nigeria_df <- nigeria_df[complete.cases(nigeria_df), ]
 nigeria_df <- nigeria_df[(nigeria_df$s5q4a == "1. YES" | nigeria_df$s5q4a == "2. NO"),]
 nigeria_df$s5q4b[nigeria_df$s5q4a == "2. NO"] <- "2. NO"
+names(nigeria_df)[names(nigeria_df) == c("s5q4a","s5q4b")] <- c("in_school_last_year","in_school_this_year")
+
 
 nigeria_df <- melt(nigeria_df, id=c("wt_baseline","sector"))
+names(nigeria_df)[names(nigeria_df) == "variable"] <- "in_school_by_year"
+
+head(nigeria_df)
+
+
 names(nigeria_df)[3:4] <- c("time","inschool")
 
 nigeria_df$sector_time[(nigeria_df$sector == "1. Urban") & (nigeria_df$time == "s5q4a")] <- "Urban, before the pandemic"
