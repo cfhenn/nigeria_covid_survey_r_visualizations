@@ -51,6 +51,4 @@ barsIO = barsIO + coord_flip()
 barsIO <- barsIO + xlab("Methods of coping with income loss") # for the y axis label
 barsIO <- barsIO + ylab("% of households") # for the y axis label
 barsIO <- barIO+ labs( x =NULL, y = NULL, caption = sourceText)
-barsIO
 
-barsIO
