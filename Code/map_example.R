@@ -30,36 +30,36 @@ base #base map
 
 #ggplot(data=mapWorldVars) + geom_boxplot(aes(y=mil_expend))
 
-mapWorldVars$HDI_S=as.vector(scale(mapWorldVars$HDI))
-mapWorldVars$DEM_S=as.vector(scale(mapWorldVars$DemoIndex))
-mapWorldVars$MIL_S=as.vector(scale(mapWorldVars$mil_expend))
+#mapWorldVars$HDI_S=as.vector(scale(mapWorldVars$HDI))
+#mapWorldVars$DEM_S=as.vector(scale(mapWorldVars$DemoIndex))
+#mapWorldVars$MIL_S=as.vector(scale(mapWorldVars$mil_expend))
 
 #data to cluster
-library(cluster)
-vars=c('HDI_S','DEM_S','MIL_S')
+#library(cluster)
+#vars=c('HDI_S','DEM_S','MIL_S')
 
-set.seed(123)
-distvars=mapWorldVars[,vars]%>%
-  st_drop_geometry() %>%
-  cluster::daisy()
+#set.seed(123)
+#distvars=mapWorldVars[,vars]%>%
+#  st_drop_geometry() %>%
+#  cluster::daisy()
 
-res.hier=hclust(distvars,"ward.D2")
+#res.hier=hclust(distvars,"ward.D2")
 
-library(ggdendro)
-ggdendrogram(res.hier)
+#library(ggdendro)
+#ggdendrogram(res.hier)
 
-mapWorldVars$clustH=cutree(res.hier,k=5)%>%as.factor()
+#mapWorldVars$clustH=cutree(res.hier,k=5)%>%as.factor()
 
-vars2=c('HDI_S','DEM_S','MIL_S','clustH')
-aggregate(.~clustH,
-          data=mapWorldVars[,vars2]%>%
-            st_drop_geometry(),
-          FUN=median)
+#vars2=c('HDI_S','DEM_S','MIL_S','clustH')
+#aggregate(.~clustH,
+         # data=mapWorldVars[,vars2]%>%
+          #  st_drop_geometry(),
+          #FUN=median)
 
-mapWorldVars$clustH=factor(mapWorldVars$clustH,
-                           levels=c(5,1,2,3,4),
-                           labels=c(1,2,3,4,5), 
-                           ordered=T)
+#mapWorldVars$clustH=factor(mapWorldVars$clustH,
+                         #  levels=c(5,1,2,3,4),
+                         #  labels=c(1,2,3,4,5), 
+                         #  ordered=T)
 
 
 
@@ -68,10 +68,10 @@ theLegLabels=c('1_worst',2,3,4,'5_best')
 theLegTitle="World_Order\n(grey is missing)"
 
 #now
-clusterMap+ scale_fill_brewer(palette ='YlOrRd',
-                              direction = -1, # color order
-                              labels=theLegLabels,
-                              name=theLegTitle)
+#clusterMap+ scale_fill_brewer(palette ='YlOrRd',
+#                              direction = -1, # color order
+#                              labels=theLegLabels,
+#                              name=theLegTitle)
 
 library(rio)
 
