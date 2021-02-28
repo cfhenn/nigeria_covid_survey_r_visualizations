@@ -20,7 +20,7 @@ nigeria_shock_df <- melt(nigeria_shock_df, "hhid")
 nigeria_shock_df$value[(is.na(nigeria_shock_df$value))] <- 0
 nigeria_shock_df <- nigeria_shock_df[!duplicated(nigeria_shock_df[c("hhid","variable")]), ]
 
-coping_descriptions <- c("Sold assets", "Earned additional income", "Got help from friends or family", "Received loan from friends or family", "Took out loan from bank", "Made purchases on credit", "Delayed payment obligations", "Sold harvest early", "Reduced food consumption", "Reduced non-food consumption", "Relied on savings", "Recieved aid from NGO", "Took advance from employer", "Received aid from government", "Relied on insurancne coverage", "Did nothing", "Other")
+coping_descriptions <- c("Sold assets", "Earned additional income", "Received aid from friends or family", "Received loan from friends or family", "Took out loan from bank", "Made purchases on credit", "Delayed payment obligations", "Sold harvest early", "Reduced food consumption", "Reduced non-food consumption", "Relied on savings", "Recieved aid from NGO", "Took advance from employer", "Received aid from government", "Relied on insurancne coverage", "Did nothing", "Other")
 nigeria_shock_df$covid_shock_coping_action <- "No shock"
 for (i in 1:length(coping_qs)) {
   nigeria_shock_df$covid_shock_coping_action[((nigeria_shock_df$variable==coping_qs[[i]]) & (nigeria_shock_df$value==1)) ]<- coping_descriptions[[i]]
