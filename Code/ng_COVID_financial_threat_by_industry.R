@@ -41,7 +41,7 @@ bar_stacked <- base + geom_bar(stat = "identity", position = 'stack')
 
 bar_stacked <- bar_stacked + theme( axis.text.x = element_text(angle = 90, hjust = 1, size=10 ))
 titleText='Number of Nigerian housholds that are financially threatened by COVID-19, by industry'
-sourceText='Source: LSMS-ISA'
+sourceText='Source: LSMS-Supported High-Frequency Phone Surveys on COVID-19'
 
 bar_stacked <- bar_stacked + xlab("Industry") + ylab("Number of Households")
 bar_stacked <- bar_stacked + labs(title=titleText, x =NULL, y = NULL, caption = sourceText)
