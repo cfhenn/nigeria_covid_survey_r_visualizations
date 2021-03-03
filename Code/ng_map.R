@@ -23,7 +23,15 @@ map_ng=read_sf(linkMap)
 
 map_ng_vars=merge(map_ng, nigeria_df_income, by='state') 
 
+titletext <- "Pecentage of Nigerians who have experienced a decrease in income since March 2020, by state"
+sourceText='Source: LSMS-Supported High-Frequency Phone Surveys on COVID-19'
+
+
 map=ggplot(data=map_ng) + geom_sf(fill='grey90',color=NA) + 
   theme_classic() +
   geom_sf(data=map_ng_vars, aes(fill=lost_income), color=NA) + 
-  scale_fill_gradient(low = 'blue', high= 'red')
+  scale_fill_gradient(low = 'blue', high= 'red') +
+  guides(fill=guide_legend(title="Percentage of people")) +
+  ggtitle(titletext) +
+  labs( caption = sourceText)
+map
