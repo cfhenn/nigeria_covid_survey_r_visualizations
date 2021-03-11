@@ -39,13 +39,14 @@ base=ggplot(data <- industry_threat_df,  aes(x=reorder(industry, counts), y=coun
 conditionColor <- ifelse(industry_threat_df$threat%in%c("Minor Threat",'No Threat'),'grey80','grey50')
 bar_stacked <- base + geom_bar(stat = "identity", position = 'stack', color = "black")
 
-bar_stacked <- bar_stacked + theme( axis.text.x = element_text(angle = 30, hjust = 1, size=10 ))
+bar_stacked <- bar_stacked 
 titleText='Number of Nigerian Housholds That Are Financially\nThreatened By COVID-19, By Industry'
 subtitleText='As of May 2020'
 sourceText='Source: LSMS-Supported High-Frequency Phone Surveys on COVID-19'
 
 bar_stacked <- bar_stacked + labs(x = NULL, y = 'Number of Households', title=titleText, subtitle=subtitleText, x =NULL, y = NULL, caption = sourceText)
 bar_stacked <- bar_stacked + guides(fill=guide_legend(title="")) + scale_fill_brewer(palette = "Blues") + theme_bw()
+bar_stacked <- bar_stacked + theme( axis.text.x = element_text(angle = 30, hjust = 1, size=10 ))
 
 
 bar_stacked
