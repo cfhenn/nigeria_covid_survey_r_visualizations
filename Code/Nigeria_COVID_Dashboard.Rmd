@@ -1,0 +1,244 @@
+---
+title: "Nigeria COVID-19 Data Visualizations"
+author: "Conor Hennessy"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    social: menu
+    source_code: embed
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library("scales")
+library(sf)
+library(magrittr)
+library(scales)
+library(questionr)
+library(reshape)
+library(dplyr)
+library(tidyverse)
+library(rio)
+
+myWeb="https://github.com/Visual-Analytics-Project-UW-EvansSchool/ourMap/raw/main/"
+mapWorldVars=read_sf(paste0(myWeb,"mapWorldVars.geojson"))
+```
+Plots
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+
+### Shocks Experienced
+
+```{r}
+rm(list=ls())
+library(ggplot2)
+library(questionr)
+library(reshape)
+library(dplyr)
+
+# collecting data on which households are  rural/urban
+link="https://github.com/cfhenn/nigeria_covid_survey_r_visualizations/blob/main/Data/r1_sect_a_3_4_5_6_8_9_12.csv?raw=true"
+nigeria_sec_df <- as.data.frame(read.csv(file = url(link)))
+nigeria_sec_df <- nigeria_sec_df[,c("sector", "wt_baseline", "hhid")]
+nigeria_sec_df$sector <- recode(nigeria_sec_df$sector, "1. Urban" = "Urban", 
+                                                       "2. Rural" = "Rural")
+
+
+#get data on what shocks each household has experienced, and how they have been coping
+link = "https://github.com/cfhenn/nigeria_covid_survey_r_visualizations/blob/main/Data/r1_sect_10.csv?raw=true"
+nigeria_shocks_and_coping_df <- as.data.frame(read.csv(file = url(link)))
+nigeria_shocks_df <- nigeria_shocks_and_coping_df[,c("hhid", "shock_cd", "s10q1")]
+nigeria_shocks_df <- nigeria_shocks_df[(nigeria_shocks_df$s10q1 != "2. NO"), ]
+nigeria_shocks_df <- nigeria_shocks_df[,c("hhid", "shock_cd")]
+
+#give shocks more readable descriptions
+nigeria_shocks_df$shock_cd <- recode(nigeria_shocks_df$shock_cd, 
+                                   "1. Illness, injury, or death of income earning member of household" = "Illness or death of income earner", 
+                                   "5. Job loss" = "Job Loss",
+                                   "6. Nonfarm business closure" = "Nonfarm business closure",
+                                   "7. Theft/looting of cash and other property" = "Theft",
+                                   "8. Disruption of farming, livestock, fishing activities" = "Disruption of farm activities",
+                                   "10. Increase in price of farming/business inputs" =  "Increased cost of doing business or farming",
+                                   "11. Fall in the price of farming/business output" = "Decreased price of products sold",
+                                   "12. Increase in price of major food items consumed" = "Increased price of food",
+                                   "96. Other (Specify)" = "Other")
+
+#combine with rural urban data, drop uninteresting cases (very few)
+nigeria_shocks_df <- merge(nigeria_shocks_df, nigeria_sec_df, by="hhid")
+nigeria_shocks_df <- nigeria_shocks_df[(nigeria_shocks_df$shock_cd != "Other"), ]
+
+
+#get frequencies of each shock  type by rural/urban
+shock_table <- wtd.table(nigeria_shocks_df$shock_cd, nigeria_shocks_df$sector, weights = nigeria_shocks_df$wt_baseline)
+shock_table <- prop.table(shock_table, margin = 2)
+shock_df <- as.data.frame(shock_table)
+names(shock_df) <- c("shock","Sector", "pct")
+
+#shock data is prepared, now move on  to coping strategies
+#keep data on coping strategies, format  data long, get rid of duplicates/NAs
+#because not interested in what shock each coping strategy was a response to, just if a household used it
+coping_qs <- c("s10q3__1", "s10q3__6", "s10q3__7", "s10q3__8", "s10q3__9", "s10q3__11", 
+               "s10q3__12", "s10q3__13", "s10q3__14", "s10q3__15", "s10q3__16", "s10q3__17",
+               "s10q3__18", "s10q3__19", "s10q3__20", "s10q3__21", "s10q3__96")
+nigeria_coping_df <- nigeria_shocks_and_coping_df[,c("hhid", coping_qs)]
+nigeria_coping_df <- melt(nigeria_coping_df, "hhid")
+nigeria_coping_df$value[(is.na(nigeria_coping_df$value))] <- 0
+nigeria_coping_df <- nigeria_coping_df[!duplicated(nigeria_coping_df[c("hhid","variable")]), ]
+
+#generate single variable with  readable description of coping strategy
+coping_descriptions <- c("Sold assets", "Earned additional income", "Received aid from friends or family", "Received loan from friends or family", "Took out loan from bank", "Made purchases on credit", "Delayed payment obligations", "Sold harvest early", "Reduced food consumption", "Reduced non-food consumption", "Relied on savings", "Recieved aid from NGO", "Took advance from employer", "Received aid from government", "Relied on insurancne coverage", "Did nothing", "Other")
+nigeria_coping_df$covid_shock_coping_action <- "No shock"
+for (i in 1:length(coping_qs)) {
+  nigeria_coping_df$covid_shock_coping_action[( (nigeria_coping_df$variable==coping_qs[[i]]) 
+                                             &  (nigeria_coping_df$value==1)) ] <- coping_descriptions[[i]]
+}
+nigeria_coping_df <- nigeria_coping_df[,c("hhid", "covid_shock_coping_action")]
+
+#get rid of uninteresting cases (very  few)
+nigeria_coping_df <- merge(nigeria_coping_df, nigeria_sec_df, by="hhid")
+nigeria_coping_df <- nigeria_coping_df[(nigeria_coping_df$sector != ""),]
+nigeria_coping_df <- nigeria_coping_df[(nigeria_coping_df$covid_shock_coping_action != "No shock"), ]
+nigeria_coping_df <- nigeria_coping_df[(nigeria_coping_df$covid_shock_coping_action != "Other"), ]
+
+#get frequencies of each strategy  by  rural/urban
+coping_table <- wtd.table(nigeria_coping_df$covid_shock_coping_action, nigeria_coping_df$sector, weights = nigeria_coping_df$wt_baseline)
+coping_table <- prop.table(coping_table, margin = 2)
+coping_df <- as.data.frame(coping_table)
+names(coping_df) <- c("copingmethod","Sector", "pct")
+
+#MAKE PLOTS!
+
+sourceText='Source: LSMS-Supported High-Frequency Phone Surveys on COVID-19'
+
+dual_bar_plot_shocks <- ggplot(shock_df, aes(x = reorder(shock, pct),  y = pct, fill = Sector ) ) + 
+  geom_bar( stat = "identity", show.legend = FALSE) +
+  scale_fill_manual(values=c("#9999CC", "#66CC99")) +
+  facet_grid( ~ Sector) +
+  coord_flip() +
+  xlab("Methods of coping with income loss") +
+  ylab("% of households") +
+  labs( x =NULL, y = NULL, caption = sourceText)
+dual_bar_plot_shocks
+
+
+```
+
+
+
+###  Coping Strategies
+
+```{r}
+dual_bar_plot_coping <- ggplot(coping_df, aes(x = reorder(copingmethod, pct) ,  y = pct, fill = Sector ) ) + 
+  geom_bar( stat = "identity", show.legend = FALSE ) +
+  scale_fill_manual(values=c("#9999CC", "#66CC99")) +
+  facet_grid( ~ Sector) + 
+  coord_flip() +
+  xlab("Methods of coping with income loss") +
+  ylab("% of households") +
+  labs( x =NULL, y = NULL, caption = sourceText)
+dual_bar_plot_coping 
+
+```
+
+
+Row
+-----------------------------------------------------------------------
+
+### Income Loss Map
+
+```{r, eval=TRUE,warning=FALSE,message=FALSE}
+link="https://github.com/cfhenn/nigeria_covid_survey_r_visualizations/blob/main/Data/r1_sect_a_3_4_5_6_8_9_12.csv?raw=true"
+nigeria_df_states <- as.data.frame(read.csv(file = url(link)))
+nigeria_df_states <- nigeria_df_states[,c("wt_baseline", "state", "hhid")]
+
+link="https://github.com/adam-porton/PubPol543/blob/main/Data/r1_sect_7.csv?raw=true"
+nigeria_df_income <- as.data.frame(read.csv(file = url(link)))
+nigeria_df_income$lost_income <- as.integer(nigeria_df_income$s7q2 == "3. Reduced")
+nigeria_df_income <- aggregate(lost_income ~ hhid, nigeria_df_income, max)
+nigeria_df_income <- merge(nigeria_df_states, nigeria_df_income, by="hhid")
+remove(nigeria_df_states)
+nigeria_df_income$lost_income <- nigeria_df_income$lost_income*nigeria_df_income$wt_baseline
+nigeria_df_income <- aggregate(cbind(lost_income, wt_baseline)~state, nigeria_df_income, sum)
+nigeria_df_income$lost_income <- 100*(nigeria_df_income$lost_income/nigeria_df_income$wt_baseline)
+nigeria_df_income <- nigeria_df_income[,c("state", "lost_income")]
+
+nigeria_df_income$state[(substring(nigeria_df_income$state,2,2) == ".")] <- substr(nigeria_df_income$state[(substring(nigeria_df_income$state,2,2) == ".")] , 4, length(nigeria_df_income$state))
+nigeria_df_income$state[(substring(nigeria_df_income$state,3,3) == ".")] <- substr(nigeria_df_income$state[(substring(nigeria_df_income$state,3,3) == ".")] , 5, length(nigeria_df_income$state))
+nigeria_df_income$state[(nigeria_df_income$state == "FCT")] <- "Fct, Abuja"
+
+linkMap="https://github.com/cfhenn/nigeria_covid_survey_r_visualizations/raw/main/Data/nigeria_geojson.geojson" 
+
+map_ng=read_sf(linkMap)
+
+map_ng_vars=merge(map_ng, nigeria_df_income, by='state') 
+
+titletext <- "Pecentage of Nigerians Who Have Experienced\na Decrease in Income Since March 2020"
+subtitletext <- "By State, as of May 2020"
+sourceText='Source: LSMS-Supported High-Frequency Phone Surveys on COVID-19'
+
+
+map=ggplot(data=map_ng) + geom_sf(fill='grey90',color=NA) + 
+  theme_classic() +
+  geom_sf(data=map_ng_vars, aes(fill=lost_income), color=NA) + 
+  scale_fill_gradient(low = 'blue', high= 'red') +
+  guides(fill=guide_legend(title="Percentage of people")) +
+  ggtitle(titletext, subtitletext) +
+  labs( caption = sourceText) +
+  scale_fill_gradient(low = 'salmon', high= 'darkred', na.value = "grey90")
+map
+
+```
+
+
+### Financial Threat Perceptions
+```{r}
+# collecting the data
+link="https://github.com/cfhenn/nigeria_covid_survey_r_visualizations/blob/main/Data/r1_sect_a_3_4_5_6_8_9_12.csv?raw=true"
+nigeria_df <- as.data.frame(read.csv(file = url(link)))
+nigeria_df <- nigeria_df[,(names(nigeria_df) %in% c("s9q2","s6q4","wt_baseline"))]
+nigeria_df <- nigeria_df[complete.cases(nigeria_df), ] #may skew the results if incomplete cases are a nonrandom sample
+
+
+#get the weighted number of people who feel various levels of threatened by COVID19 as columns
+nigeria_df$threat[nigeria_df$s9q2 == "1. A substantial threat"] <- "Severe threat"
+nigeria_df$threat [nigeria_df$s9q2 == "2. A moderate threat"] <- "Medium threat"
+nigeria_df$threat [(nigeria_df$s9q2 == "3. Not much of a threat")|(nigeria_df$s9q2 == "4. Not a threat at all" )] <- "Little or no threat"
+
+#sort respondents in to industries
+nigeria_df$industry[nigeria_df$s6q4 ==  "1. AGRICULTURE, HUNTING, FISHING"] <- "Agriculture"
+nigeria_df$industry[(nigeria_df$s6q4 == "2. MINING, MANUFACTURING")] <- "Mining & Manufacturing"
+nigeria_df$industry[(nigeria_df$s6q4 == "3. ELECTRICITY, GAS, WATER SUPPLY")] <- "Utilities"
+nigeria_df$industry[(nigeria_df$s6q4 == "4. CONSTRUCTION")] <- "Construction"
+nigeria_df$industry[(nigeria_df$s6q4 == "7. PROFESSIONAL ACTIVITIES: FINANCE, LEGAL, ANALYSIS, COMPUTER, REAL ESTATE")] <- "Finance, Law, & Tech"
+nigeria_df$industry[(nigeria_df$s6q4 == "8. PUBLIC ADMINISTRATION")] <- "Public Administrationn"
+nigeria_df$industry[(nigeria_df$s6q4 == "5. BUYING &amp; SELLING GOODS, REPAIR OF GOODS, HOTELS &amp; RESTAURANTS")] <- "Service & Hospitality"
+nigeria_df$industry[(nigeria_df$s6q4 == "9. PERSONAL SERVICES, EDUCATION, HEALTH, CULTURE, SPORT, DOMESTIC WORK, OTHER")] <- "Other"
+
+
+industry_threat=wtd.table(nigeria_df$industry, nigeria_df$threat, weights = nigeria_df$wt_baseline)
+industry_threat_df=as.data.frame(industry_threat)
+names(industry_threat_df) <- c("industry","threat","counts")
+
+#marginal
+industry_threat_mg_col <- prop.table(industry_threat,margin = 2)
+#adding marginal
+industry_threat_df$pct_col <- as.data.frame(industry_threat_mg_col)[,3]
+
+base=ggplot(data <- industry_threat_df,  aes(x=reorder(industry, counts), y=counts, fill=threat))
+
+conditionColor <- ifelse(industry_threat_df$threat%in%c("Minor Threat",'No Threat'),'grey80','grey50')
+bar_stacked <- base + geom_bar(stat = "identity", position = 'stack', color = "black")
+
+bar_stacked <- bar_stacked + theme( axis.text.x = element_text(angle = 30, hjust = 1, size=10 ))
+titleText='Number of Nigerian Housholds That Are Financially\nThreatened By COVID-19, By Industry'
+subtitleText='As of May 2020'
+sourceText='Source: LSMS-Supported High-Frequency Phone Surveys on COVID-19'
+
+bar_stacked <- bar_stacked + labs(x = NULL, y = 'Number of Households', title=titleText, subtitle=subtitleText, x =NULL, y = NULL, caption = sourceText)
+bar_stacked <- bar_stacked + guides(fill=guide_legend(title="")) + scale_fill_brewer(palette = "Blues") + theme_bw()
+
+
+bar_stacked
+```
