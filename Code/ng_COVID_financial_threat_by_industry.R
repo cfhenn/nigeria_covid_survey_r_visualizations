@@ -19,7 +19,7 @@ nigeria_df$industry[nigeria_df$s6q4 ==  "1. AGRICULTURE, HUNTING, FISHING"] <- "
 nigeria_df$industry[(nigeria_df$s6q4 == "2. MINING, MANUFACTURING")] <- "Mining & Manufacturing"
 nigeria_df$industry[(nigeria_df$s6q4 == "3. ELECTRICITY, GAS, WATER SUPPLY")] <- "Utilities"
 nigeria_df$industry[(nigeria_df$s6q4 == "4. CONSTRUCTION")] <- "Construction"
-nigeria_df$industry[(nigeria_df$s6q4 == "7. PROFESSIONAL ACTIVITIES: FINANCE, LEGAL, ANALYSIS, COMPUTER, REAL ESTATE")] <- "Finance, Law, Tech, & Real Estate"
+nigeria_df$industry[(nigeria_df$s6q4 == "7. PROFESSIONAL ACTIVITIES: FINANCE, LEGAL, ANALYSIS, COMPUTER, REAL ESTATE")] <- "Finance, Law, & Tech"
 nigeria_df$industry[(nigeria_df$s6q4 == "8. PUBLIC ADMINISTRATION")] <- "Public Administrationn"
 nigeria_df$industry[(nigeria_df$s6q4 == "5. BUYING &amp; SELLING GOODS, REPAIR OF GOODS, HOTELS &amp; RESTAURANTS")] <- "Service & Hospitality"
 nigeria_df$industry[(nigeria_df$s6q4 == "9. PERSONAL SERVICES, EDUCATION, HEALTH, CULTURE, SPORT, DOMESTIC WORK, OTHER")] <- "Other"
@@ -37,16 +37,15 @@ industry_threat_df$pct_col <- as.data.frame(industry_threat_mg_col)[,3]
 base=ggplot(data <- industry_threat_df,  aes(x=reorder(industry, counts), y=counts, fill=threat))
 
 conditionColor <- ifelse(industry_threat_df$threat%in%c("Minor Threat",'No Threat'),'grey80','grey50')
-bar_stacked <- base + geom_bar(stat = "identity", position = 'stack')
+bar_stacked <- base + geom_bar(stat = "identity", position = 'stack', color = "black")
 
-bar_stacked <- bar_stacked + theme( axis.text.x = element_text(angle = 90, hjust = 1, size=10 ))
-titleText='Number of Nigerian housholds that are financially threatened by COVID-19, by industry'
+bar_stacked <- bar_stacked + theme( axis.text.x = element_text(angle = 30, hjust = 1, size=10 ))
+titleText='Number of Nigerian Housholds That Are Financially\nThreatened By COVID-19, By Industry'
+subtitleText='As of May 2020'
 sourceText='Source: LSMS-Supported High-Frequency Phone Surveys on COVID-19'
 
-bar_stacked <- bar_stacked + xlab("Industry") + ylab("Number of Households")
-bar_stacked <- bar_stacked + labs(title=titleText, x =NULL, y = NULL, caption = sourceText)
-bar_stacked <- bar_stacked + guides(fill=guide_legend(title=""))
+bar_stacked <- bar_stacked + labs(x = NULL, y = 'Number of Households', title=titleText, subtitle=subtitleText, x =NULL, y = NULL, caption = sourceText)
+bar_stacked <- bar_stacked + guides(fill=guide_legend(title="")) + scale_fill_brewer(palette = "Blues") + theme_bw()
+
 
 bar_stacked
-
-

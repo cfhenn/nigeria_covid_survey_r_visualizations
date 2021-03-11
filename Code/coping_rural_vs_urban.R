@@ -9,7 +9,7 @@ link="https://github.com/cfhenn/nigeria_covid_survey_r_visualizations/blob/main/
 nigeria_sec_df <- as.data.frame(read.csv(file = url(link)))
 nigeria_sec_df <- nigeria_sec_df[,c("sector", "wt_baseline", "hhid")]
 nigeria_sec_df$sector <- recode(nigeria_sec_df$sector, "1. Urban" = "Urban", 
-                                                       "2. Rural" = "Rural")
+                                "2. Rural" = "Rural")
 
 
 #get data on what shocks each household has experienced, and how they have been coping
@@ -21,15 +21,15 @@ nigeria_shocks_df <- nigeria_shocks_df[,c("hhid", "shock_cd")]
 
 #give shocks more readable descriptions
 nigeria_shocks_df$shock_cd <- recode(nigeria_shocks_df$shock_cd, 
-                                   "1. Illness, injury, or death of income earning member of household" = "Illness or death of income earner", 
-                                   "5. Job loss" = "Job Loss",
-                                   "6. Nonfarm business closure" = "Nonfarm business closure",
-                                   "7. Theft/looting of cash and other property" = "Theft",
-                                   "8. Disruption of farming, livestock, fishing activities" = "Disruption of farm activities",
-                                   "10. Increase in price of farming/business inputs" =  "Increased cost of doing business or farming",
-                                   "11. Fall in the price of farming/business output" = "Decreased price of products sold",
-                                   "12. Increase in price of major food items consumed" = "Increased price of food",
-                                   "96. Other (Specify)" = "Other")
+                                     "1. Illness, injury, or death of income earning member of household" = "Illness or death of income earner", 
+                                     "5. Job loss" = "Job Loss",
+                                     "6. Nonfarm business closure" = "Nonfarm business closure",
+                                     "7. Theft/looting of cash and other property" = "Theft",
+                                     "8. Disruption of farming, livestock, fishing activities" = "Disruption of farm activities",
+                                     "10. Increase in price of farming/business inputs" =  "Increased cost of doing business or farming",
+                                     "11. Fall in the price of farming/business output" = "Decreased price of products sold",
+                                     "12. Increase in price of major food items consumed" = "Increased price of food",
+                                     "96. Other (Specify)" = "Other")
 
 #combine with rural urban data, drop uninteresting cases (very few)
 nigeria_shocks_df <- merge(nigeria_shocks_df, nigeria_sec_df, by="hhid")
@@ -58,7 +58,7 @@ coping_descriptions <- c("Sold assets", "Earned additional income", "Received ai
 nigeria_coping_df$covid_shock_coping_action <- "No shock"
 for (i in 1:length(coping_qs)) {
   nigeria_coping_df$covid_shock_coping_action[( (nigeria_coping_df$variable==coping_qs[[i]]) 
-                                             &  (nigeria_coping_df$value==1)) ] <- coping_descriptions[[i]]
+                                                &  (nigeria_coping_df$value==1)) ] <- coping_descriptions[[i]]
 }
 nigeria_coping_df <- nigeria_coping_df[,c("hhid", "covid_shock_coping_action")]
 
@@ -78,7 +78,7 @@ names(coping_df) <- c("copingmethod","Sector", "pct")
 
 sourceText='Source: LSMS-Supported High-Frequency Phone Surveys on COVID-19'
 
-dual_bar_plot_shocks <- ggplot(shock_df, aes(x = shock,  y = pct, fill = Sector ) ) + 
+dual_bar_plot_shocks <- ggplot(shock_df, aes(x = reorder(shock, pct),  y = pct, fill = Sector ) ) + 
   geom_bar( stat = "identity", show.legend = FALSE) +
   scale_fill_manual(values=c("#9999CC", "#66CC99")) +
   facet_grid( ~ Sector) +
@@ -88,7 +88,7 @@ dual_bar_plot_shocks <- ggplot(shock_df, aes(x = shock,  y = pct, fill = Sector 
   labs( x =NULL, y = NULL, caption = sourceText)
 dual_bar_plot_shocks
 
-dual_bar_plot_coping <- ggplot(coping_df, aes(x = copingmethod ,  y = pct, fill = Sector ) ) + 
+dual_bar_plot_coping <- ggplot(coping_df, aes(x = reorder(copingmethod, pct) ,  y = pct, fill = Sector ) ) + 
   geom_bar( stat = "identity", show.legend = FALSE ) +
   scale_fill_manual(values=c("#9999CC", "#66CC99")) +
   facet_grid( ~ Sector) + 
@@ -97,4 +97,3 @@ dual_bar_plot_coping <- ggplot(coping_df, aes(x = copingmethod ,  y = pct, fill 
   ylab("% of households") +
   labs( x =NULL, y = NULL, caption = sourceText)
 dual_bar_plot_coping 
-
